@@ -1,7 +1,7 @@
 #include "Entity.h"
 
 
-bool Entity::hasCollision(Entity other){
+void Entity::Draw(){
     
 
 }
