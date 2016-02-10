@@ -1,9 +1,9 @@
 /* Eric Liang
-CS3113 Game Programming Assignment 2
-NetID: ezl207
+	CS3113 Game Programming Assignment 2
+	NetID: ezl207
 */
 #ifdef _WINDOWS
-#include <GL/glew.h>
+	#include <GL/glew.h>
 #endif
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -11,9 +11,9 @@ NetID: ezl207
 #include "ShaderProgram.h"
 
 #ifdef _WINDOWS
-#define RESOURCE_FOLDER ""
+	#define RESOURCE_FOLDER ""
 #else
-#define RESOURCE_FOLDER "NYUCodebase.app/Contents/Resources/"
+	#define RESOURCE_FOLDER "NYUCodebase.app/Contents/Resources/"
 #endif
 #define RAD_CONV (3.1415926 / 180.0)
 
@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 	displayWindow = SDL_CreateWindow("My Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 360, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
-#ifdef _WINDOWS
-	glewInit();
-#endif
+	#ifdef _WINDOWS
+		glewInit();
+	#endif
 
 	SDL_Event event;
 	bool done = false;
@@ -38,14 +38,14 @@ int main(int argc, char *argv[])
 	glViewport(0, 0, 640, 360);
 
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
-
+	
 	Matrix projectionMatrix;
 	Matrix viewMatrix;
 
 	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
 
 	glUseProgram(program.programID);
-
+	
 	float angle = 0;
 	while (!done) {
 		while (SDL_PollEvent(&event)) {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
-
+		
 
 		SDL_GL_SwapWindow(displayWindow);
 	}
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-GLuint LoadTexture(const char *image_path, DWORD imageType) {
+GLuint LoadTexture(const char *image_path,DWORD imageType) {
 	SDL_Surface *surface = IMG_Load(image_path);
 
 	GLuint textureID;
@@ -83,8 +83,8 @@ GLuint LoadTexture(const char *image_path, DWORD imageType) {
 	return textureID;
 }
 
-void DrawSprite(GLuint tID, ShaderProgram program){
-
+void DrawSprite(GLuint tID,ShaderProgram program){
+	
 	glBindTexture(GL_TEXTURE_2D, tID);
 
 	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
