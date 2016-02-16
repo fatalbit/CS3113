@@ -1,19 +1,24 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>
+#include "ShaderProgram.h"
 
 struct Entity {
 
-	void Draw();
-
-	float x_pos;
-	float y_pos;
-	float angle;
-
+	Entity(GLuint oldTextureID);
+	void Draw(ShaderProgram* program);
+	
 	GLuint textureID;
 
+	float x;
+	float y;
+	float rotation;
+
+	float width;
+	float height;
+
 	float speed;
-	float x_direction;
-	float y_direction;
+	float direction_x;
+	float direction_y;
 
 };
