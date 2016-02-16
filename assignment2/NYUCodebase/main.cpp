@@ -64,7 +64,12 @@ int main(int argc, char *argv[])
 	ball.height = 0.25f;
 	ball.width = 0.25f;
 	ball.speed = 3.0f;
-	ball_angle = (rand() % 45 + 45);
+	if (rand() % 1){
+		ball_angle = (rand() % 90 + 135);
+	}
+	else{
+		ball_angle = (rand() % 90 + 316);
+	}
 
 	std::vector<Entity> entities;
 	entities.push_back(leftPaddle);
@@ -185,7 +190,12 @@ void Update(std::vector<Entity>& entities, Entity& ball, float& ball_angle, floa
 	if (ball.x > 3.55 || ball.x < -3.55){
 		ball.x = 0;
 		ball.y = 0;
-		ball_angle = (rand() % 45 + 45);
+		if (rand() % 1){
+			ball_angle = (rand() % 90 + 135);
+		}
+		else{
+			ball_angle = (rand() % 90 + 316);
+		}
 	}
 	else{
 		if (hasSqCollision(entities[0], ball)){
