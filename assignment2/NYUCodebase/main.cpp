@@ -194,7 +194,7 @@ void Update(std::vector<Entity>& entities, Entity& ball, float& ball_angle, floa
 			ball_angle = (rand() % 90 + 135);
 		}
 		else{
-			ball_angle = (rand() % 90 + 316);
+			ball_angle = (rand() % 90 + 315);
 		}
 	}
 	else{
