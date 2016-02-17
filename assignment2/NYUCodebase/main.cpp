@@ -187,15 +187,15 @@ void Update(std::vector<Entity>& entities, Entity& ball, float& ball_angle, floa
 		}
 	}
 
-	if (ball.x > 3.55 || ball.x < -3.55){
+	if (ball.x >= 3.55){
 		ball.x = 0;
 		ball.y = 0;
-		if (rand() % 1){
-			ball_angle = (rand() % 90 + 135);
-		}
-		else{
-			ball_angle = (rand() % 90 + 316);
-		}
+		ball_angle = (rand() % 90 + 315);
+	}
+	else if(ball.x <= -3.55){
+		ball.x = 0;
+		ball.y = 0;
+		ball_angle = (rand() % 90 + 135);
 	}
 	else{
 		if (hasSqCollision(entities[0], ball)){
