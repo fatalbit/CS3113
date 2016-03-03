@@ -13,6 +13,7 @@
 #include <time.h>
 #include "ShaderProgram.h"
 #include "Entity.h"
+#include "DrawSpriteText.h"
 
 #ifdef _WINDOWS
 	#define RESOURCE_FOLDER ""
@@ -29,7 +30,7 @@ void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
 void ProcessEvents(SDL_Event* event, bool* done, float elapsed,Entity& bullet, Entity& player);
 void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
 void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
-void Reset(std::vector<Entity*>& entities);
+void draw_sprite_text(ShaderProgram* program, int fontTexture, std::string text, float size, float spacing);
 
 int state;
 int level = 1;
@@ -88,6 +89,9 @@ int main(int argc, char *argv[])
 	Entity explosion(space_sheet, 1024.0f, 737.0f, 613.0f, 37.0f, 37.0f, 0.5);
 	explosion.x = 7.0;
 
+	GLuint fontsheet = LoadTexture("font1.png",GL_RGBA);
+	DrawSpriteText Life(fontsheet);
+
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
 	glUseProgram(program.programID);
@@ -114,7 +118,9 @@ int main(int argc, char *argv[])
 
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
+		Life.Draw(&program, "Life", 0.5, 0);
 		Render(&program, entities, bullet, explosion, player);
+
 		
 	}
 	for (size_t i = 0; i < entities.size(); ++i){
@@ -290,5 +296,7 @@ void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bull
 	player.Draw(program);
 	bullet.Draw(program);
 	explosion.Draw(program);
+
 	SDL_GL_SwapWindow(displayWindow);
 }
+
