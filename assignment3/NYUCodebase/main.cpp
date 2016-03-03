@@ -1,5 +1,5 @@
 /* Eric Liang
-	CS3113 Game Programming Assignment 2
+	CS3113 Game Programming Assignment 3
 	NetID: ezl207
 */
 #ifdef _WINDOWS
@@ -27,8 +27,8 @@ SDL_Window* displayWindow;
 GLuint LoadTexture(const char *image_path, DWORD imageType);
 void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
 void ProcessEvents(SDL_Event* event, bool* done, float elapsed,Entity& bullet, Entity& player);
-void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& player);
-void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& player);
+void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
+void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
 
 int state;
 
@@ -79,9 +79,11 @@ int main(int argc, char *argv[])
 	Entity player(space_sheet, 1024.0f, 211.0f, 941.0f, 99.0f, 75.0f, 0.5);
 	player.y = -3.5 + 0.1 + player.height/2;
 
-	Entity bullet(space_sheet, 1024.0f, 858.0f, 230.0f, 9.0f, 54.0f, 0.5);
+	Entity bullet(space_sheet, 1024.0f, 843.0f, 789.0f, 13.0f, 57.0f, 0.5);
 	bullet.x = 7.0;
 	
+	Entity explosion(space_sheet, 1024.0f, 737.0f, 613.0f, 37.0f, 37.0f, 0.5);
+	explosion.x = 7.0;
 
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
@@ -101,15 +103,15 @@ int main(int argc, char *argv[])
 		}
 		while (fixedElapsed >= FIXED_TIMESTEP){
 			fixedElapsed -= FIXED_TIMESTEP;
-			Update(FIXED_TIMESTEP, entities, bullet, player);
+			Update(FIXED_TIMESTEP, entities, explosion, bullet, player);
 		}
-		Update(fixedElapsed, entities,bullet, player);
+		Update(fixedElapsed, entities,bullet, explosion, player);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
-		Render(&program, entities, bullet, player);
+		Render(&program, entities, bullet, explosion, player);
 		
 	}
 	for (size_t i = 0; i < entities.size(); ++i){
@@ -188,11 +190,14 @@ void ProcessEvents(SDL_Event* event,bool* done, float elapsed, Entity& bullet, E
 	}
 }
 
-void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& player){
+void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player){
 	static float timer = 0;
 	static bool right = 1;
-	timer += elapsed;
+	static float explosion_life = 0;
 
+	timer += elapsed;
+	explosion_life += elapsed;
+	
 	player.Update(elapsed, friction_x, gravity);
 	if (player.x >= (6.22 - player.width / 2)){
 		player.x = (6.22 - player.width / 2);
@@ -206,22 +211,38 @@ void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entit
 		bullet.y <= -3.5
 		){
 		bullet.velocity_y = 0;
-		bullet.x = 7.0;
-		bullet.y = 0.0;
+		bullet.x = 7.0f;
+		bullet.y = 0.0f;
 	}
+	if (explosion_life > 0.2){
+		if (explosion.isDead){
+			explosion.x = 7.0f;
+			explosion.y = 0.0f;
+		}
+		explosion_life = 0;
+	}
+
 	for (size_t i = 0; i < entities.size(); ++i){
 		if (entities[i]->hasSqCollision(bullet) && !entities[i]->isDead){
 			entities[i]->isDead = 1;
 			bullet.velocity_y = 0;
-			bullet.x = 7.0;
-			bullet.y = 0.0;
+			bullet.x = 7.0f;
+			bullet.y = 0.0f;
+			explosion.x = entities[i]->x;
+			explosion.y = entities[i]->y;
+			explosion.isDead = 1;
 		}
 	}
 
-	if (timer > 1.5){
+	if (timer > 1.5f){
+	
 		if (right){
 			for (size_t i = 0; i < entities.size(); ++i){
-				if ((entities[i]->x + entities[i]->width / 2) >= (6.22 - entities[i]->width/2)){
+				if (
+					!entities[i]->isDead &&
+					(entities[i]->x + entities[i]->width / 2) >= (6.22 - entities[i]->width / 2)
+					)
+				{
 					for (size_t j = 0; j < entities.size(); ++j){
 						entities[j]->y -= entities[i]->height;
 					}
@@ -237,7 +258,7 @@ void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entit
 		}
 		else{
 			for (size_t i = 0; i < entities.size(); ++i){
-				if ((entities[i]->x - entities[i]->width / 2) <= (-6.22 + entities[i]->width / 2)){
+				if (!entities[i]->isDead && (entities[i]->x - entities[i]->width / 2) <= (-6.22 + entities[i]->width / 2)){
 					for (size_t j = 0; j < entities.size(); ++j){
 						entities[j]->y -= entities[j]->height;
 					}
@@ -255,7 +276,7 @@ void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entit
 
 }
 
-void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& player){
+void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player){
 
 	for (size_t i = 0; i < entities.size(); ++i){
 		if (!entities[i]->isDead){
@@ -265,7 +286,7 @@ void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bull
 
 	player.Draw(program);
 	bullet.Draw(program);
-
+	explosion.Draw(program);
 	SDL_GL_SwapWindow(displayWindow);
 }
 
