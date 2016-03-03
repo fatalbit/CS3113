@@ -29,13 +29,16 @@ void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
 void ProcessEvents(SDL_Event* event, bool* done, float elapsed,Entity& bullet, Entity& player);
 void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
 void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entity& explosion, Entity& player);
+void Reset(std::vector<Entity*>& entities);
 
 int state;
+int level = 1;
 
 const float friction_x = 0.1f;
 const float gravity = 0.0f;
 
 enum GameState {STATE_TITLE, STATE_GAME};
+
 
 int main(int argc, char *argv[])
 {
@@ -70,8 +73,8 @@ int main(int argc, char *argv[])
 				break;
 			}
 			
-			newEnt->x = (-6.22 + newEnt->width/2) + (x * (newEnt->width + 0.1));
-			newEnt->y = (3.5 - newEnt->height/2 ) - (y * (newEnt->height + 0.1));
+			newEnt->x = (-6.22 + newEnt->width/2 * 11) + (x * (newEnt->width + 0.15));
+			newEnt->y = ((3.5 - newEnt->height * 2) - newEnt->height/2 ) - (y * (newEnt->height + 0.2));
 			entities.push_back(newEnt);
 		}
 	}
@@ -234,7 +237,7 @@ void Update(float elapsed, std::vector<Entity*>& entities, Entity& bullet, Entit
 		}
 	}
 
-	if (timer > 1.5f){
+	if (timer > 1.0f){
 	
 		if (right){
 			for (size_t i = 0; i < entities.size(); ++i){
@@ -289,4 +292,3 @@ void Render(ShaderProgram* program, std::vector<Entity*>& entities, Entity& bull
 	explosion.Draw(program);
 	SDL_GL_SwapWindow(displayWindow);
 }
-
