@@ -9,15 +9,18 @@
 #include <vector>
 #include <string>
 
-DrawSpriteText::DrawSpriteText(GLuint textureID) :
+DrawSpriteText::DrawSpriteText(GLuint textureID, std::string text, float size, float spacing) :
 textureID(textureID),
 x(0),
-y(0)
+y(0),
+size(size),
+spacing(spacing),
+text(text)
 {
 
 }
 
-void DrawSpriteText::Draw(ShaderProgram* program, std::string text, float size, float spacing){
+void DrawSpriteText::Draw(ShaderProgram* program){
 	Matrix modelMatrix;
 	modelMatrix.identity();
 	modelMatrix.Translate(x, y, 0);
