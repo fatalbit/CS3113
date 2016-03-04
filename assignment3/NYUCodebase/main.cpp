@@ -28,12 +28,15 @@
 SDL_Window* displayWindow;
 GLuint LoadTexture(const char *image_path, DWORD imageType);
 void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
-void ProcessEvents(SDL_Event* event, bool* done, float elapsed,Entity& player_bullet, Entity& player);
-void Render(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, std::vector<DrawSpriteText> text, Entity& player_bullet, Entity& explosion, Entity& player);
-void Update(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, Entity& player_bullet, Entity& explosion, Entity& player);
-void draw_sprite_text(ShaderProgram* program, int fontTexture, std::string text, float size, float spacing);
-bool bullet_not_on_screen(Entity bullet);
+void GameProcessEvents(SDL_Event* event, bool* done, float elapsed,Entity& player_bullet, Entity& player);
+void GameRender(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, std::vector<DrawSpriteText> text, Entity& player_bullet, Entity& explosion, Entity& player);
+void GameUpdate(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, Entity& player_bullet, Entity& explosion, Entity& player);
 
+void TitleProcessEvents(SDL_Event* event, bool* done);
+void TitleRender(ShaderProgram* program, std::vector<DrawSpriteText>& text);
+
+bool bullet_not_on_screen(Entity bullet);
+void move_enemies(std::vector<Entity*>& entities, bool& right, float& timer, size_t startIndex, size_t endIndex);
 int lives = 3;
 
 /*friction and gravity not used just testing*/
@@ -42,7 +45,7 @@ const float gravity = 0.0f;
 
 enum GameState {STATE_TITLE, STATE_GAME};
 
-int state;
+int state = STATE_TITLE;
 int main(int argc, char *argv[])
 {
 	
@@ -59,6 +62,7 @@ int main(int argc, char *argv[])
 	std::vector<Entity*> entities;
 	std::vector<DrawSpriteText> text;
 	std::vector<Entity*> enemy_bullets;
+	std::vector<DrawSpriteText> title_text;
 
 	GLuint space_sheet = LoadTexture("sheet.png", GL_RGBA);
 	GLuint fontsheet = LoadTexture("font1.png", GL_RGBA);
@@ -114,6 +118,10 @@ int main(int argc, char *argv[])
 		entities.push_back(newEnt);
 	}
 
+	DrawSpriteText Title(fontsheet, "Press Enter to Start", 0.5, 0);
+	Title.x = -4.7;
+	title_text.push_back(Title);
+
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
 	glUseProgram(program.programID);
@@ -123,25 +131,30 @@ int main(int argc, char *argv[])
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
-		ProcessEvents(&event, &done, elapsed, player_bullet, player);
+		
 
 		float fixedElapsed = elapsed;
-
-		if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS){
-			fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
-		}
-		while (fixedElapsed >= FIXED_TIMESTEP){
-			fixedElapsed -= FIXED_TIMESTEP;
-			Update(FIXED_TIMESTEP, entities, enemy_bullets, player_bullet, explosion, player);
-		}
-		Update(fixedElapsed, entities, enemy_bullets, player_bullet, explosion, player);
-
-		glClear(GL_COLOR_BUFFER_BIT);
-
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
-		Render(&program, entities, enemy_bullets, text, player_bullet, explosion, player);
 
+		switch (state){
+		case(STATE_TITLE) :
+			TitleProcessEvents(&event,&done);
+			TitleRender(&program,title_text);
+			break;
+		case(STATE_GAME):
+			GameProcessEvents(&event, &done, elapsed, player_bullet, player);
+			if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS){
+				fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
+			}
+			while (fixedElapsed >= FIXED_TIMESTEP){
+				fixedElapsed -= FIXED_TIMESTEP;
+				GameUpdate(FIXED_TIMESTEP, entities, enemy_bullets, player_bullet, explosion, player);
+			}
+			GameUpdate(fixedElapsed, entities, enemy_bullets, player_bullet, explosion, player);
+			GameRender(&program, entities, enemy_bullets, text, player_bullet, explosion, player);
+			break;
+		}
 		
 	}
 	for (size_t i = 0; i < entities.size(); ++i){
@@ -182,7 +195,7 @@ void Setup(SDL_Window** displayWindow,Matrix* projectionMatrix){
 	projectionMatrix->setOrthoProjection(-6.22f, 6.22f, -3.5f, 3.5f, -1.0f, 1.0f);
 }
 
-void ProcessEvents(SDL_Event* event,bool* done, float elapsed, Entity& player_bullet, Entity& player){
+void GameProcessEvents(SDL_Event* event,bool* done, float elapsed, Entity& player_bullet, Entity& player){
 	while (SDL_PollEvent(event)) {
 		//Event Loop
 		if (event->type == SDL_QUIT || event->type == SDL_WINDOWEVENT_CLOSE) {
@@ -215,7 +228,7 @@ void ProcessEvents(SDL_Event* event,bool* done, float elapsed, Entity& player_bu
 	}
 }
 
-void Update(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, Entity& player_bullet, Entity& explosion, Entity& player){
+void GameUpdate(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, Entity& player_bullet, Entity& explosion, Entity& player){
 	static float timer = 0;
 	static bool right = 1;
 	static float explosion_life = 0;
@@ -262,7 +275,7 @@ void Update(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> 
 		explosion_life = 0;
 	}
 
-	for (size_t i = 44; i < 44 + (3 - lives); ++i){
+	for (size_t i = 44; i < 44 + (3 - lives); ++i){ /*show life amount based on lives variable*/
 		entities[i]->isDead = 1;
 	}
 
@@ -278,50 +291,12 @@ void Update(float elapsed, std::vector<Entity*>& entities, std::vector<Entity*> 
 		}
 	}
 
-	if (timer > 1.0f){
-	
-		if (right){
-			for (size_t i = 0; i < 44; ++i){
-				if (
-					!entities[i]->isDead &&
-					(entities[i]->x + entities[i]->width / 2) >= (6.22 - entities[i]->width / 2)
-					)
-				{
-					for (size_t j = 0; j < 44; ++j){
-						entities[j]->y -= entities[i]->height;
-					}
-					right = 0;
-					timer = 0.0f;
-					return;
-				}
-			}
-			for (size_t i = 0; i < 44; ++i){
-				entities[i]->x += entities[i]->width / 2;
-			}
-		
-		}
-		else{
-			for (size_t i = 0; i < 44; ++i){
-				if (!entities[i]->isDead && (entities[i]->x - entities[i]->width / 2) <= (-6.22 + entities[i]->width / 2)){
-					for (size_t j = 0; j < 44; ++j){
-						entities[j]->y -= entities[j]->height;
-					}
-					right = 1;
-					timer = 0.0f;
-					return;
-				}
-			}
-			for (size_t i = 0; i < 44; ++i){
-				entities[i]->x -= entities[i]->width / 2;
-			}
-		}
-		timer = 0.0f;
-	}
+	move_enemies(entities, right,timer, 0, 44);
 
 }
 
-void Render(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, std::vector<DrawSpriteText> text, Entity& player_bullet, Entity& explosion, Entity& player){
-
+void GameRender(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<Entity*> enemy_bullets, std::vector<DrawSpriteText> text, Entity& player_bullet, Entity& explosion, Entity& player){
+	glClear(GL_COLOR_BUFFER_BIT);
 	for (size_t i = 0; i < entities.size(); ++i){
 		if (!entities[i]->isDead){
 			entities[i]->Draw(program);
@@ -346,9 +321,76 @@ void Render(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<
 	SDL_GL_SwapWindow(displayWindow);
 }
 
+void TitleProcessEvents(SDL_Event* event, bool* done){
+	while (SDL_PollEvent(event)) {
+		if (event->type == SDL_QUIT || event->type == SDL_WINDOWEVENT_CLOSE) {
+			*done = true;
+		}
+		else if (event->type == SDL_KEYDOWN){
+			if (event->key.keysym.scancode == SDL_SCANCODE_RETURN){
+				state = STATE_GAME;
+			}
+		}
+	}
+
+}
+
+void TitleRender(ShaderProgram* program, std::vector<DrawSpriteText>& text){
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	for (size_t i = 0; i < text.size(); ++i){
+		text[i].Draw(program);
+	}
+
+	SDL_GL_SwapWindow(displayWindow);
+}
+
+void move_enemies(std::vector<Entity*>& entities, bool& right, float& timer, size_t startIndex, size_t endIndex){
+	if (timer > 1.0f){
+
+		if (right){
+			for (size_t i = startIndex; i < endIndex; ++i){
+				if (
+					!entities[i]->isDead &&
+					(entities[i]->x + entities[i]->width / 2) >= (6.22 - entities[i]->width / 2)
+					)
+				{
+					for (size_t j = startIndex; j < endIndex; ++j){
+						entities[j]->y -= entities[i]->height;
+					}
+					right = 0;
+					timer = 0.0f;
+					return;
+				}
+			}
+			for (size_t i = startIndex; i < endIndex; ++i){
+				entities[i]->x += entities[i]->width / 2;
+			}
+
+		}
+		else{
+			for (size_t i = startIndex; i < endIndex; ++i){
+				if (!entities[i]->isDead && (entities[i]->x - entities[i]->width / 2) <= (-6.22 + entities[i]->width / 2)){
+					for (size_t j = 0; j < 44; ++j){
+						entities[j]->y -= entities[j]->height;
+					}
+					right = 1;
+					timer = 0.0f;
+					return;
+				}
+			}
+			for (size_t i = startIndex; i < endIndex; ++i){
+				entities[i]->x -= entities[i]->width / 2;
+			}
+		}
+		timer = 0.0f;
+	}
+}
+
 bool bullet_not_on_screen(Entity bullet){
 	return 6.22 <= bullet.x || 
 		bullet.x <= -6.22 ||
 		3.5 <= bullet.y ||
 		bullet.y <= -3.5;
 }
+
