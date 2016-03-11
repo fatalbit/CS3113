@@ -57,6 +57,7 @@ Mix_Music* hit;
 Mix_Music* shoot;
 Mix_Music* start;
 Mix_Music* move;
+Mix_Music* bgmus;
 
 enum GameState {STATE_TITLE, STATE_GAME};
 
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
 	shoot = Mix_LoadMUS("shoot.wav");
 	start = Mix_LoadMUS("start.wav");
 	move = Mix_LoadMUS("mov.wav");
+	bgmus = Mix_LoadMUS("Gumbel_-_04_-_Levels.mp3");
 
 	Entity* newEnt;
 	for (size_t x = 0; x < 11; ++x){
@@ -151,7 +153,8 @@ int main(int argc, char *argv[])
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
 	glUseProgram(program.programID);
-	
+	Mix_PlayMusic(bgmus, -1);
+
 	while (!done) {
 		
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
@@ -168,7 +171,8 @@ int main(int argc, char *argv[])
 			TitleProcessEvents(&event,&done);
 			TitleRender(&program,title_text);
 			break;
-		case(STATE_GAME):
+		case(STATE_GAME) :
+		
 			GameProcessEvents(&event, &done, elapsed, entities, player_bullet, player);
 			if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS){
 				fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
