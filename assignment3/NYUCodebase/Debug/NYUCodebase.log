@@ -1,18 +1,17 @@
-﻿Build started 3/4/2016 4:26:04 PM.
+﻿Build started 3/7/2016 11:24:30 PM.
      1>Project "C:\Users\Eric\CS3113\assignment3\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(56): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(88): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(89): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(62): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(94): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
      1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(95): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(114): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(117): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(122): warning C4305: '=' : truncation from 'double' to 'float'
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(259): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(262): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(278): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(105): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(127): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(132): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(286): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(289): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\eric\cs3113\assignment3\nyucodebase\main.cpp(305): warning C4018: '<' : signed/unsigned mismatch
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Eric\CS3113\assignment3\Debug\NYUCodebase.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Eric\CS3113\assignment3\Debug\NYUCodebase.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Eric\CS3113\assignment3\Debug\NYUCodebase.lib" /MACHINE:X86 Debug\DrawSpriteText.obj
          Debug\Entity.obj
@@ -26,4 +25,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.24
+Time Elapsed 00:00:01.28
