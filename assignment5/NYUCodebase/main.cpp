@@ -184,7 +184,7 @@ GLuint LoadTexture(const char *image_path, DWORD imageType) {
 void Setup(SDL_Window** displayWindow,Matrix* projectionMatrix){
 	SDL_Init(SDL_INIT_VIDEO);
 	
-	*displayWindow = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL);
+	*displayWindow = SDL_CreateWindow("Platformer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(*displayWindow);
 	SDL_GL_MakeCurrent(*displayWindow, context);
 #ifdef _WINDOWS
