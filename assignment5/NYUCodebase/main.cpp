@@ -40,8 +40,7 @@
 #define CALC_X(x_index) ((((x_index % SPRITE_COUNT_X))*23.0f)+2)
 #define CALC_Y(y_index) ((((y_index % SPRITE_COUNT_Y))*23.0f)+2)
 #define TILE_SIZE 0.5f
-#define LEVEL_X 128
-#define LEVEL_Y 32
+
 
 SDL_Window* displayWindow;
 GLuint LoadTexture(const char *image_path, DWORD imageType);
@@ -73,6 +72,9 @@ const float gravity = -9.8f;
 enum GameState {STATE_TITLE, STATE_GAME};
 
 int state = STATE_GAME;
+
+unsigned int LEVEL_X;
+unsigned int LEVEL_Y;
 
 std::vector<int> solid{ 121, 122, 123, 124, 125, 128, 129, 151, 152, 153, 154, 155, 156, 157, 158, 159 };
 
@@ -106,12 +108,12 @@ int main(int argc, char *argv[])
 	player.x = 6.0f;
 	player.y = -2.0f;
 
-	unsigned short** level = new unsigned short*[LEVEL_Y];
+	unsigned short** level; /*= new unsigned short*[LEVEL_Y];
 	for (size_t i = 0; i < LEVEL_Y; ++i){
 		level[i] = new unsigned short[LEVEL_X];
-	}
+	}*/
 	
-	read_level(level,"mymap.csv");
+	read_level(level,"mymap.txt");
 
 	while (!done) {
 		
@@ -329,17 +331,21 @@ void update_player_sprite(float elapsed, Entity& player){
 
 void read_level(unsigned short** level, std::string fn){
 	std::ifstream file(fn);
-	for (size_t i = 0; i < LEVEL_Y; ++i){
-		std::string line;
-		if (!getline(file, line)) break;
-
-		std::istringstream word(line);
-		for (size_t j = 0; j < LEVEL_X; ++j){
-			std::string c;
-			if (!getline(word, c, ',')) break;
-			level[i][j] = atoi(c.c_str());
+	std::string line;
+	while (std::getline(file,line)){
+		if (line == "[header]"){
+			while (line != "\n"){
+				std::getline(file, line);
+				if (strcmp(line.c_str, "width=") > 0){
+					
+				}
+			}
+		}
+		else if (line == "[layer]"){
+		
 		}
 	}
+	
 	file.close();
 }
 
