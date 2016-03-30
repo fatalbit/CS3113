@@ -1,5 +1,5 @@
 /* Eric Liang
-	CS3113 Game Programming Assignment 3
+	CS3113 Game Programming Assignment 5
 	NetID: ezl207
 */
 #ifdef _WINDOWS
