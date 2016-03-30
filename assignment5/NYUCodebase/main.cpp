@@ -1,5 +1,5 @@
 /* Eric Liang
-	CS3113 Game Programming Assignment 3
+	CS3113 Game Programming Assignment 5
 	NetID: ezl207
 */
 #ifdef _WINDOWS
@@ -329,17 +329,27 @@ void update_player_sprite(float elapsed, Entity& player){
 
 void read_level(unsigned short** level, std::string fn){
 	std::ifstream file(fn);
-	for (size_t i = 0; i < LEVEL_Y; ++i){
-		std::string line;
-		if (!getline(file, line)) break;
+  std::string line;
+  while(getline(file,line)){
+    if(line == "[header]"){
+      while(getline(file,line)) {
+        if(line) {
 
-		std::istringstream word(line);
-		for (size_t j = 0; j < LEVEL_X; ++j){
-			std::string c;
-			if (!getline(word, c, ',')) break;
-			level[i][j] = atoi(c.c_str());
-		}
-	}
+        }
+        else if(line){
+
+        }       
+
+
+      }
+
+
+    }
+    else if(line == "[layer]"){
+
+
+    }
+  }
 	file.close();
 }
 
