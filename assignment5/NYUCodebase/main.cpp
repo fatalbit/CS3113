@@ -47,7 +47,7 @@ GLuint LoadTexture(const char *image_path, DWORD imageType);
 void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
 void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<Entity*> entities, Entity& player);
 void GameRender(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<DrawSpriteText> text, unsigned short** level, GLuint level_sprites, Entity& player);
-void GameUpdate(float elapsed, std::vector<Entity*>& entities,unsigned short** level, Entity& player);
+void GameUpdate(float elapsed, std::vector<Entity*>& entities,unsigned short**& level, Entity& player);
 
 void TitleProcessEvents(SDL_Event* event, bool* done);
 void TitleRender(ShaderProgram* program, std::vector<DrawSpriteText>& text);
@@ -58,7 +58,7 @@ bool bullet_not_on_screen(Entity bullet);
 void move_enemies(std::vector<Entity*>& entities, bool& right, float& timer, size_t startIndex, size_t endIndex);
 
 void clear_penetration(Entity& first, unsigned short** level);
-void read_level(unsigned short** level, std::string fn);
+void read_level(unsigned short**& level, std::string fn);
 void render_level(ShaderProgram* program, unsigned short** level, GLuint level_sprites);
 
 void update_player_sprite(float elapsed, Entity& player);
@@ -67,14 +67,14 @@ float sheet_calc_y(size_t index);
 
 /*friction and gravity not used just testing*/
 const float friction_x = 1.05f;
-const float gravity = -9.8f;
+const float gravity = -9.8;
 
 enum GameState {STATE_TITLE, STATE_GAME};
 
 int state = STATE_GAME;
 
-unsigned int LEVEL_X;
-unsigned int LEVEL_Y;
+unsigned int LEVEL_X = 0;
+unsigned int LEVEL_Y = 0;
 
 std::vector<int> solid{ 121, 122, 123, 124, 125, 128, 129, 151, 152, 153, 154, 155, 156, 157, 158, 159 };
 
@@ -108,10 +108,7 @@ int main(int argc, char *argv[])
 	player.x = 6.0f;
 	player.y = -2.0f;
 
-	unsigned short** level; /*= new unsigned short*[LEVEL_Y];
-	for (size_t i = 0; i < LEVEL_Y; ++i){
-		level[i] = new unsigned short[LEVEL_X];
-	}*/
+	unsigned short** level = nullptr; 
 	
 	read_level(level,"mymap.txt");
 
@@ -134,6 +131,7 @@ int main(int argc, char *argv[])
 		case(STATE_GAME) :
 			viewMatrix.identity();
 			viewMatrix.Translate(-player.x, -player.y, 0);
+			
 			GameProcessEvents(&event, &done, elapsed, entities, player);
 			if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS){
 				fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
@@ -224,7 +222,7 @@ void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<
 	}
 }
 
-void GameUpdate(float elapsed, std::vector<Entity*>& entities, unsigned short** level, Entity& player){
+void GameUpdate(float elapsed, std::vector<Entity*>& entities, unsigned short**& level, Entity& player){
 	player.Update(elapsed, friction_x, gravity);
 	update_player_sprite(elapsed, player);
 	clear_penetration(player, level);
@@ -329,20 +327,40 @@ void update_player_sprite(float elapsed, Entity& player){
 	}
 }
 
-void read_level(unsigned short** level, std::string fn){
+void read_level(unsigned short**& level, std::string fn){
 	std::ifstream file(fn);
 	std::string line;
 	while (std::getline(file,line)){
 		if (line == "[header]"){
-			while (line != "\n"){
+			while (!line.empty()){
 				std::getline(file, line);
-				if (strcmp(line.c_str, "width=") > 0){
-					
+				if (!line.compare(0,6,"width=")){
+					LEVEL_X = atoi(line.substr(6).c_str());
 				}
+				else if (!line.compare(0, 7, "height=")){
+					LEVEL_Y = atoi(line.substr(7).c_str());
+				}
+			}
+			level = new unsigned short*[LEVEL_Y];
+			for (size_t i = 0; i < LEVEL_Y; ++i){
+				level[i] = new unsigned short[LEVEL_X];
 			}
 		}
 		else if (line == "[layer]"){
-		
+			while (!line.empty()){
+				std::getline(file, line);
+				if (!line.compare(0, 5, "data=")){
+					for (size_t y = 0; y < LEVEL_Y; ++y){
+						if (!getline(file, line)) exit(1);
+						std::stringstream tok(line);
+						std::string tokstring;
+						for (size_t x = 0; x < LEVEL_X; ++x){
+							getline(tok, tokstring, ',');
+							level[y][x] = atoi(tokstring.c_str())-1;
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -355,9 +373,11 @@ void render_level(ShaderProgram* program, unsigned short** level, GLuint level_s
 	float u;
 	float v;
 	unsigned count = 0;
+
 	Matrix levelMatrix;
 	levelMatrix.identity();
 	program->setModelMatrix(levelMatrix);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindTexture(GL_TEXTURE_2D, level_sprites);
