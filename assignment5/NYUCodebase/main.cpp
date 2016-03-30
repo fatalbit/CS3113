@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
 	Entity player(plat_sprites, 692.0f, 692.0f, CALC_X(20), CALC_Y(0), 21.0f, 21.0f, 0.5f);
 	player.x = 7.0f;
 	player.y = -15.0f;
+	player.facingRight = true;
 	player.entityType = ENTITY_PLAYER;
 
 	unsigned short** level = nullptr; 
@@ -224,7 +225,21 @@ void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<
 
 void GameUpdate(float elapsed, std::vector<Entity*>& entities, unsigned short**& level, Entity& player){
 	player.Update(elapsed, friction_x, gravity);
-	update_player_sprite(elapsed, player);
+	for (size_t i = 0; i < entities.size(); ++i){
+		if (entities[i]->collidedLeft){
+			entities[i]->acceleration_x = 3.0f;
+		}
+		else if (entities[i]->collidedRight){
+			entities[i]->acceleration_x = -3.0f;
+		}
+		entities[i]->Update(elapsed,friction_x,gravity);
+		clear_penetration(*entities[i], level);
+		if (entities[i]->hasSqCollision(player)){
+			
+		
+		}
+	}
+	
 	clear_penetration(player, level);
 	
 }
@@ -267,24 +282,24 @@ void clear_penetration(Entity& first, unsigned short** level){
 	float penetration = 0;
 	int gridX = first.x / TILE_SIZE;
 	int gridY = abs(first.y / TILE_SIZE);
-	int tile_bottom = abs(first.y - first.height / 2) / TILE_SIZE;
-	int tile_top = abs(first.y + first.height / 2) / TILE_SIZE;
-	int tile_left = abs(first.x - first.width / 2) / TILE_SIZE;
-	int tile_right = abs(first.x + first.width / 2) / TILE_SIZE;
+	int tile_bottom = fabs(first.y - first.height / 2) / TILE_SIZE;
+	int tile_top = fabs(first.y + first.height / 2) / TILE_SIZE;
+	int tile_left = fabs(first.x - first.width / 2) / TILE_SIZE;
+	int tile_right = fabs(first.x + first.width / 2) / TILE_SIZE;
 	first.collidedBottom = false;
 	first.collidedTop = false;
 	first.collidedRight = false;
 	first.collidedLeft = false;
 
 	if (std::find(solid.begin(), solid.end(), level[gridY][tile_left]) != solid.end()){
-		penetration = abs(((tile_left*TILE_SIZE) + TILE_SIZE) - (first.x - first.width / 2));
+		penetration = fabs(((tile_left*TILE_SIZE) + TILE_SIZE) - (first.x - first.width / 2));
 		first.collidedLeft = true;
 		first.acceleration_y = 0;
 		first.velocity_x = 0;
 		first.x += penetration;
 	}
 	else if (std::find(solid.begin(), solid.end(), level[gridY][tile_right]) != solid.end()){
-		penetration = abs((tile_right*TILE_SIZE) - (first.x + first.width / 2));
+		penetration = fabs((tile_right*TILE_SIZE) - (first.x + first.width / 2));
 		first.collidedRight = true;
 		first.acceleration_y = 0;
 		first.velocity_x = 0;
@@ -305,26 +320,6 @@ void clear_penetration(Entity& first, unsigned short** level){
 	}
 
 
-}
-
-void update_player_sprite(float elapsed, Entity& player){
-	static int index = 28;
-	static float timer = 0;
-	timer += elapsed;
-
-	if (player.collidedBottom && abs(player.velocity_x) > 1.3f){
-		player.set_sprite(CALC_X(index), CALC_Y(0), 21.0f, 21.0f, 0.5f);
-		if (timer > 0.2f){
-			index = 28 + (++index % 2);
-			timer = 0;
-		}
-	}
-	else if (player.collidedBottom && abs(player.velocity_x) < 1.3f){
-		player.set_sprite(CALC_X(20), CALC_Y(0), 21.0f, 21.0f, 0.5f);
-	}
-	else if (!player.collidedBottom){
-		player.set_sprite(CALC_X(27), CALC_Y(0), 21.0f, 21.0f, 0.5f);
-	}
 }
 
 void read_level(unsigned short**& level, std::vector<Entity*>& entities, GLuint sprites, std::string fn){
@@ -394,12 +389,15 @@ void read_level(unsigned short**& level, std::vector<Entity*>& entities, GLuint 
 				newEnt = new Entity(sprites, 692.0f, 692.0f, CALC_X(24), CALC_Y(11), 21.0f, 21.0f, 0.5f);
 				newEnt->x = x*TILE_SIZE;
 				newEnt->y = y*-TILE_SIZE;
+				newEnt->isflying = true;
+				newEnt->acceleration_x = -3.0f;
 				entities.push_back(newEnt);
 				break;
 			case MOUSE:
 				newEnt = new Entity(sprites, 692.0f, 692.0f, CALC_X(24), CALC_Y(12), 21.0f, 21.0f, 0.5f);
 				newEnt->x = x*TILE_SIZE;
 				newEnt->y = y*-TILE_SIZE;
+				newEnt->acceleration_x = -3.0f;
 				entities.push_back(newEnt);
 				break;
 			default:

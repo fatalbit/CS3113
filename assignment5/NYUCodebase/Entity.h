@@ -37,6 +37,9 @@ struct Entity {
 
 	bool isStatic;
 	bool flip;
+	bool isflying;
+	bool facingRight;
+
 	bool collidedTop;
 	bool collidedBottom;
 	bool collidedLeft;
