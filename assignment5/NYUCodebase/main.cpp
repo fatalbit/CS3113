@@ -235,8 +235,8 @@ void GameUpdate(float elapsed, std::vector<Entity*>& entities, unsigned short**&
 		entities[i]->Update(elapsed,friction_x,gravity);
 		clear_penetration(*entities[i], level);
 		if (entities[i]->hasSqCollision(player)){
-			
-		
+			player.x = 7.0f;
+			player.y = -15.0f;
 		}
 	}
 	
