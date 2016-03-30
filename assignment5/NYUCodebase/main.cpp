@@ -46,7 +46,7 @@ SDL_Window* displayWindow;
 GLuint LoadTexture(const char *image_path, DWORD imageType);
 void Setup(SDL_Window** displayWindow, Matrix* projectionMatrix);
 void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<Entity*> entities, Entity& player);
-void GameRender(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<DrawSpriteText> text, unsigned short** level, GLuint level_sprites, Entity& player);
+void GameRender(ShaderProgram* program, std::vector<Entity*> entities, std::vector<DrawSpriteText> text, unsigned short** level, GLuint level_sprites, Entity& player);
 void GameUpdate(float elapsed, std::vector<Entity*>& entities,unsigned short**& level, Entity& player);
 
 void TitleProcessEvents(SDL_Event* event, bool* done);
@@ -58,7 +58,7 @@ bool bullet_not_on_screen(Entity bullet);
 void move_enemies(std::vector<Entity*>& entities, bool& right, float& timer, size_t startIndex, size_t endIndex);
 
 void clear_penetration(Entity& first, unsigned short** level);
-void read_level(unsigned short**& level, std::string fn);
+void read_level(unsigned short**& level,std::vector<Entity*>& entities, GLuint sprites, std::string fn);
 void render_level(ShaderProgram* program, unsigned short** level, GLuint level_sprites);
 
 void update_player_sprite(float elapsed, Entity& player);
@@ -66,10 +66,11 @@ float sheet_calc_x(size_t index);
 float sheet_calc_y(size_t index);
 
 /*friction and gravity not used just testing*/
-const float friction_x = 1.05f;
+const float friction_x = 1.00f;
 const float gravity = -9.8;
 
 enum GameState {STATE_TITLE, STATE_GAME};
+enum EnemyType { BEE, MOUSE };
 
 int state = STATE_GAME;
 
@@ -105,12 +106,13 @@ int main(int argc, char *argv[])
 	Entity bg(bg_tex, 1280.0f, 800.0f, 0.0f, 0.0f, 1280.0f, 800.0f, 7.0f);
 
 	Entity player(plat_sprites, 692.0f, 692.0f, CALC_X(20), CALC_Y(0), 21.0f, 21.0f, 0.5f);
-	player.x = 6.0f;
-	player.y = -2.0f;
+	player.x = 7.0f;
+	player.y = -15.0f;
+	player.entityType = ENTITY_PLAYER;
 
 	unsigned short** level = nullptr; 
 	
-	read_level(level,"mymap.txt");
+	read_level(level,entities, plat_sprites, "mymap.txt");
 
 	while (!done) {
 		
@@ -199,11 +201,9 @@ void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<
 		}
 		else if (event->type == SDL_KEYDOWN){
 			if (event->key.keysym.scancode == SDL_SCANCODE_D){
-				player.flip = false;
 				player.acceleration_x = 3;
 			}
 			else if (event->key.keysym.scancode == SDL_SCANCODE_A){
-				player.flip = true;
 				player.acceleration_x = -3;
 			}
 			else if (player.collidedBottom && event->key.keysym.scancode == SDL_SCANCODE_SPACE){
@@ -229,12 +229,12 @@ void GameUpdate(float elapsed, std::vector<Entity*>& entities, unsigned short**&
 	
 }
 
-void GameRender(ShaderProgram* program, std::vector<Entity*>& entities, std::vector<DrawSpriteText> text, unsigned short** level, GLuint level_sprites, Entity& player){
+void GameRender(ShaderProgram* program, std::vector<Entity*> entities, std::vector<DrawSpriteText> text, unsigned short** level, GLuint level_sprites, Entity& player){
 	glClear(GL_COLOR_BUFFER_BIT);
+	render_level(program, level,level_sprites);
 	for (size_t i = 0; i < entities.size(); ++i){
 		entities[i]->Draw(program);
 	}
-	render_level(program, level,level_sprites);
 	player.Draw(program);
 	SDL_GL_SwapWindow(displayWindow);
 }
@@ -327,13 +327,18 @@ void update_player_sprite(float elapsed, Entity& player){
 	}
 }
 
-void read_level(unsigned short**& level, std::string fn){
+void read_level(unsigned short**& level, std::vector<Entity*>& entities, GLuint sprites, std::string fn){
 	std::ifstream file(fn);
 	std::string line;
+	float x = 0;
+	float y = 0;
+	Entity* newEnt = nullptr;
+	EnemyType enm_type;
+
 	while (std::getline(file,line)){
 		if (line == "[header]"){
 			while (!line.empty()){
-				std::getline(file, line);
+				if(!std::getline(file, line))break;
 				if (!line.compare(0,6,"width=")){
 					LEVEL_X = atoi(line.substr(6).c_str());
 				}
@@ -348,7 +353,7 @@ void read_level(unsigned short**& level, std::string fn){
 		}
 		else if (line == "[layer]"){
 			while (!line.empty()){
-				std::getline(file, line);
+				if(!std::getline(file, line)) break;
 				if (!line.compare(0, 5, "data=")){
 					for (size_t y = 0; y < LEVEL_Y; ++y){
 						if (!getline(file, line)) exit(1);
@@ -360,6 +365,45 @@ void read_level(unsigned short**& level, std::string fn){
 						}
 					}
 				}
+			}
+		}
+		else if (line == "[Enemy]"){
+			while (!line.empty()){
+				if(!std::getline(file, line)) break;
+				if (!line.compare(0, 5, "type=")){
+					line = line.substr(5);
+					if (line == "bee"){
+						enm_type = BEE;
+					}
+					else if (line == "mouse"){
+						enm_type = MOUSE;
+					}
+				}
+				else if (!line.compare(0, 9, "location=")){
+					line = line.substr(9);
+					std::stringstream tok2(line);
+					std::string tokstring;
+					if(!getline(tok2, tokstring, ',')) break;
+					x = 0.5+atoi(tokstring.c_str());
+					if(!getline(tok2, tokstring, ','))break;
+					y = 0.5+atoi(tokstring.c_str());
+				}
+			}
+			switch (enm_type){
+			case BEE:
+				newEnt = new Entity(sprites, 692.0f, 692.0f, CALC_X(24), CALC_Y(11), 21.0f, 21.0f, 0.5f);
+				newEnt->x = x*TILE_SIZE;
+				newEnt->y = y*-TILE_SIZE;
+				entities.push_back(newEnt);
+				break;
+			case MOUSE:
+				newEnt = new Entity(sprites, 692.0f, 692.0f, CALC_X(24), CALC_Y(12), 21.0f, 21.0f, 0.5f);
+				newEnt->x = x*TILE_SIZE;
+				newEnt->y = y*-TILE_SIZE;
+				entities.push_back(newEnt);
+				break;
+			default:
+				break;
 			}
 		}
 	}

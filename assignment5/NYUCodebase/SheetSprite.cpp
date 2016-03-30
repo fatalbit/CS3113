@@ -8,10 +8,10 @@ SheetSprite::SheetSprite(unsigned int textureID, float x_res, float y_res, float
 	textureID(textureID),
 	x_res(x_res),
 	y_res(y_res),
-	u(u),
-	v(v),
-	width(width),
-	height(height),
+	u(u/x_res),
+	v(v/y_res),
+	width(width/x_res),
+	height(height/y_res),
 	size(size)
 {
 	
