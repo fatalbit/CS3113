@@ -15,6 +15,9 @@ void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<
 			else if (event->key.keysym.scancode == SDL_SCANCODE_A){
 				player.acceleration_x = -3;
 			}
+      else if (event->key.keysym.scancode == SDL_SCANCODE_ESC){
+        *done = true; 
+      }
 			else if (player.collidedBottom && event->key.keysym.scancode == SDL_SCANCODE_SPACE){
 				player.velocity_y = 5.5;
 				player.collidedBottom = false;
