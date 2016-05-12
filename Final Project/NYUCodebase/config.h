@@ -16,7 +16,7 @@
 #define ORTHO_Y 4.0f
 #define FRICTION_X 1.00f
 #define GRAVITY -9.8f
-#define DEBUG 1
+#define DEBUG 0
 #define TITLE "Platformer Demo"
 
 
