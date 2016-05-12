@@ -50,11 +50,11 @@ std::vector<int> solid{ 121, 122, 123, 124, 125, 128, 129, 151, 152, 153, 154, 1
 	};
 std::vector<int> enemy_markers{ 899 };
 std::vector<int> flag{ 310 };
+Mix_Music* shoot;
 int points = 0;
 int cur_level = LEVEL_ONE;
 int main(int argc, char *argv[])
 {
-
 	SDL_Event event;
 	bool done = false;
 	float lastFrameTicks = 0.0f;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	std::vector<Entity*> markers;
 	std::string text;
 	Mix_OpenAudio(FREQUENCY, MIX_DEFAULT_FORMAT, CHANNELS, AUD_BUF_SIZE);
-
+  shoot = Mix_LoadMUS("shoot.wav")
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 	glUseProgram(program.programID);
 
@@ -106,12 +106,10 @@ int main(int argc, char *argv[])
 	flag.add_animation("idle", {310, 340});
 	flag.set_animation("idle");
 
-	unsigned short** level = nullptr; 
-	
+	unsigned short** level = nullptr;
 	read_level(level, LEVEL_X, LEVEL_Y, entities, player, flag, plat_sprites, "level1.txt");
 
 	while (!done) {
-		
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
@@ -129,8 +127,7 @@ int main(int argc, char *argv[])
 		case(STATE_GAME) :
 			viewMatrix.identity();
 			viewMatrix.Translate(-player.x, -player.y, 0);
-			
-			GameProcessEvents(&event, &done, elapsed, entities, missle, player);
+			GameProcessEvents(&event, &done, elapsed, entities, missle, player, shoot);
 			if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS){
 				fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
 			}
@@ -171,7 +168,6 @@ int main(int argc, char *argv[])
 
 void Setup(SDL_Window** displayWindow,Matrix* projectionMatrix){
 	SDL_Init(SDL_INIT_VIDEO);
-	
 	*displayWindow = SDL_CreateWindow("Platformer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(*displayWindow);
 	SDL_GL_MakeCurrent(*displayWindow, context);

@@ -2,7 +2,7 @@
 #include "config.h"
 #include "utils.h"
 #include <cstdlib>
-void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<Entity*> entities, Entity& missle, Entity& player){
+void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<Entity*> entities, Entity& missle, Entity& player, Mix_Music* shoot){
 	while (SDL_PollEvent(event)) {
 		//Event Loop
 		if (event->type == SDL_QUIT || event->type == SDL_WINDOWEVENT_CLOSE) {
@@ -25,6 +25,7 @@ void GameProcessEvents(SDL_Event* event, bool* done, float elapsed, std::vector<
 					missle.isAlive == false
 					)
 				{
+          Mix_PlayMusic(shoot, 1);
 					missle.isAlive = true;
 					missle.flip = !player.flip;
 					missle.y = player.y;
